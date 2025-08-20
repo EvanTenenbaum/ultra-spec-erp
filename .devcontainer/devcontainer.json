@@ -1,0 +1,95 @@
+{
+  "name": "Ultra Spec ERP - ERPNext Development",
+  "image": "frappe/erpnext:v15.0.0",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "nodeGypDependencies": true,
+      "version": "18"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.10"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": true,
+      "version": "latest"
+    }
+  },
+
+  "forwardPorts": [
+    8000,
+    9000,
+    3000
+  ],
+
+  "portsAttributes": {
+    "8000": {
+      "label": "ERPNext Web",
+      "onAutoForward": "notify"
+    },
+    "9000": {
+      "label": "Socketio",
+      "onAutoForward": "silent"
+    },
+    "3000": {
+      "label": "Development Server",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.flake8",
+        "ms-python.black-formatter",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-typescript-next",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+        "python.linting.flake8Enabled": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": true
+        },
+        "files.associations": {
+          "*.py": "python",
+          "*.js": "javascript",
+          "*.html": "html",
+          "*.css": "css",
+          "*.json": "json"
+        }
+      }
+    }
+  },
+
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  
+  "remoteUser": "frappe",
+  
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+
+  "workspaceFolder": "/workspace",
+
+  "containerEnv": {
+    "FRAPPE_SITE_NAME": "ultra-spec-erp.localhost",
+    "DEVELOPER_MODE": "1",
+    "FRAPPE_DEV_SERVER": "1"
+  }
+}
+
