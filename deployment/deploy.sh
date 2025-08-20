@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Ultra Spec ERP - Production Deployment Script
-# This script automatically deploys updates from GitHub to production
+# Auto-configured for server: 72.60.67.104
 
 set -e
 
 # Configuration
-REPO_URL="https://github.com/yourusername/ultra-spec-erp.git"
-SITE_NAME="your-site.com"
+REPO_URL="https://github.com/evantenenbaum/ultra-spec-erp.git"
+SITE_NAME="72.60.67.104"
 FRAPPE_USER="frappe"
 BENCH_PATH="/home/frappe/frappe-bench"
 BACKUP_DIR="/home/frappe/backups"
@@ -82,24 +82,12 @@ if [ $? -eq 0 ]; then
 else
     error "Failed to pull changes from GitHub"
     log "🔄 Attempting to restore from backup..."
-    # Restore logic would go here
     exit 1
 fi
 
-# Step 3: Update dependencies
-log "📦 Installing/updating dependencies..."
-cd "$BENCH_PATH"
-
-# Install any new Python dependencies
-bench --site "$SITE_NAME" migrate
-if [ $? -eq 0 ]; then
-    success "Dependencies updated successfully"
-else
-    warning "Some dependencies may not have updated correctly"
-fi
-
-# Step 4: Run database migrations
+# Step 3: Run database migrations
 log "🗄️ Running database migrations..."
+cd "$BENCH_PATH"
 bench --site "$SITE_NAME" migrate
 if [ $? -eq 0 ]; then
     success "Database migrations completed"
@@ -108,7 +96,7 @@ else
     exit 1
 fi
 
-# Step 5: Build assets
+# Step 4: Build assets
 log "🔨 Building frontend assets..."
 bench build --app ultra_spec_erp
 if [ $? -eq 0 ]; then
@@ -117,12 +105,12 @@ else
     warning "Asset build completed with warnings"
 fi
 
-# Step 6: Clear cache
+# Step 5: Clear cache
 log "🧹 Clearing cache..."
 bench --site "$SITE_NAME" clear-cache
 bench --site "$SITE_NAME" clear-website-cache
 
-# Step 7: Restart services
+# Step 6: Restart services
 log "🔄 Restarting services..."
 bench restart
 if [ $? -eq 0 ]; then
@@ -132,12 +120,12 @@ else
     exit 1
 fi
 
-# Step 8: Health check
+# Step 7: Health check
 log "🏥 Performing health check..."
 sleep 5
 
 # Check if site is accessible
-HEALTH_CHECK_URL="https://$SITE_NAME/api/method/ping"
+HEALTH_CHECK_URL="http://72.60.67.104"
 HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_CHECK_URL" || echo "000")
 
 if [ "$HTTP_STATUS" = "200" ]; then
@@ -147,20 +135,12 @@ else
     warning "Site may be experiencing issues"
 fi
 
-# Step 9: Update deployment log
+# Step 8: Update deployment log
 log "📝 Updating deployment log..."
 echo "Deployment completed at $(date)" >> "/home/frappe/auto-deploy/deployment-history.log"
 echo "Backup: $BACKUP_NAME" >> "/home/frappe/auto-deploy/deployment-history.log"
 echo "Git commit: $(cd $BENCH_PATH/apps/ultra_spec_erp && git rev-parse --short HEAD)" >> "/home/frappe/auto-deploy/deployment-history.log"
 echo "---" >> "/home/frappe/auto-deploy/deployment-history.log"
-
-# Step 10: Send notification (if configured)
-if [ ! -z "$SLACK_WEBHOOK_URL" ]; then
-    log "📢 Sending deployment notification..."
-    curl -X POST -H 'Content-type: application/json' \
-        --data "{\"text\":\"🚀 Ultra Spec ERP deployed successfully to production!\n• Site: $SITE_NAME\n• Backup: $BACKUP_NAME\n• Time: $(date)\"}" \
-        "$SLACK_WEBHOOK_URL" || warning "Failed to send Slack notification"
-fi
 
 success "🎉 Deployment completed successfully!"
 log "📊 Deployment Summary:"
@@ -171,4 +151,3 @@ log "   • Deployment time: $(date)"
 log "   • Health check: $HTTP_STATUS"
 
 exit 0
-
